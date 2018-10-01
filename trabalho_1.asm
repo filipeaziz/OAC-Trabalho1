@@ -7,7 +7,7 @@ header: .space 56
 offs: .word
 byte: .byte
 
-menu: .asciiz "MENU\n1) Abrir imagem\n2) Blur effect\n3) Edge Extractor\n4) Thresholding\n5) Sair\nEscolha uma opção:"
+menu: .asciiz "MENU\n1) Abrir imagem\n2) Blur effect\n3) Edge Extractor\n4) Thresholding\n5) Sair\nEscolha uma opcao:"
 
 .text
 
@@ -25,9 +25,9 @@ syscall            # open a file (file descriptor returned in $v0)
 move $s0, $v0      # save the file descriptor 
 
 
-# Lê todo o cabeçalho
+# Le todo o cabecalho
 move $a0,$s0
-la $a1,header+2    # soma 2 para alinhar a memória
+la $a1,header+2    # soma 2 para alinhar a memoria
 li $a2,54
 li $v0,14
 syscall
@@ -41,7 +41,7 @@ sw $s2,tamx
 lw $s3,header+24
 sw $s3,tamy
 
-# Anda no arquivo até começarem os bits de pixel
+# Anda no arquivo ate comecarem os bits de pixel
 
 addi $s1,$s1,-54
 pula:
@@ -55,7 +55,7 @@ addi $s1,$s1,-1
 j pula
 
 
-# Coloca no contador o endereço, primeiramente, do primeiro elemento da última linha
+# Coloca no contador o endereco, primeiramente, do primeiro elemento da ultima linha
 abre:
 addi $s3,$s3,-1
 mul $t0,$s2,$s3
@@ -76,10 +76,6 @@ addi $t1,$t1,1
 
 bge $t1,$s2,abre    # verifica se chegou no fim da linha
 bne $v0,$zero,loop  # verifica se a imagem terminou
-
-
-li $v0, 10
-syscall
 
 
 j abre_menu   # volta para o menu
