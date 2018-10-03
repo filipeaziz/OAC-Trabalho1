@@ -121,6 +121,33 @@ blur_effect:
 ################################################################################
 edge_extractor:
 
+# coloca imagem em greyscale
+lw $t1,tamx
+lw $t2,tamy
+mul $s1,$t1,$t2
+mul $s1,$s1,4
+
+li $t0,0
+
+# pega os valores das cores em cada pixel, faz a media simples e registra cada nivel de cor com esse valor
+converte:
+addi $s2,$t0,0x10040000
+lb $t1,1($s2)
+lb $t2,2($s2)
+lb $t3,3($s2)
+add $s3,$t1,$t2
+add $s3,$s3,$t3
+div $s3,$s3,3
+mul $s3,$s3,0x00010101
+sw $s3,($s2)
+
+
+addi $t0,$t0,4
+
+bne $t0,$s1,converte
+
+
+j abre_menu   # volta para o menu
 
 
 ################################################################################
@@ -151,7 +178,7 @@ move $s6,$v0
 
 # coloca em um unico registrador
 mul $s4,$s4,0x00010000
-mul $s5,$s5,0x0000100
+mul $s5,$s5,0x00000100
 add $s4,$s4,$s5
 add $s4,$s4,$s6
 
@@ -171,7 +198,7 @@ move $s6,$v0
 
 # coloca em um unico registrador
 mul $s7,$s7,0x00010000
-mul $s5,$s5,0x0000100
+mul $s5,$s5,0x00000100
 add $s7,$s7,$s5
 add $s7,$s7,$s6
 
