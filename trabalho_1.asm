@@ -8,8 +8,15 @@ byte: .byte 0
 tam_blur: .word 1
 img: .word 0x10040000
 
-menu: .asciiz "MENU\n1) Abrir imagem\n2) Blur effect\n3) Edge Extractor\n4) Thresholding\n5) Sair\nEscolha uma opcao:"
-threshold: .asciiz "\n\nDigite os intervalos de cores: \nR_max, G_max e B_max \nR_min, G_min e B_min\n"
+menu: .asciiz "\nMENU\n1) Abrir imagem\n2) Blur effect\n3) Edge Extractor\n4) Thresholding\n5) Sair\nEscolha uma opcao:"
+threshold: .asciiz "\n\nTHRESHOLDING\n"
+R_max: .asciiz "Digite o valor maximo de vermelho: "
+G_max: .asciiz "Digite o valor maximo de verde: "
+B_max: .asciiz "Digite o valor maximo de azul: "
+R_min: .asciiz "Digite o valor minimo de vermelho: "
+G_min: .asciiz "Digite o valor minimo de verde: "
+B_min: .asciiz "Digite o valor minimo de azul: "
+
 
 blur: .asciiz "Digite o tamanho do kernel do blur: "
 .align 2
@@ -127,18 +134,20 @@ lw $t2,tamy
 mul $s1,$t1,$t2
 mul $s1,$s1,4
 
+
 li $t0,0
 
 # pega os valores das cores em cada pixel, faz a media simples e registra cada nivel de cor com esse valor
 converte:
 addi $s2,$t0,0x10040000
-lb $t1,1($s2)
-lb $t2,2($s2)
-lb $t3,3($s2)
+lbu $t1,1($s2)
+lbu $t2,2($s2)
+lbu $t3,3($s2)
 add $s3,$t1,$t2
 add $s3,$s3,$t3
 div $s3,$s3,3
-mul $s3,$s3,0x00010101
+move $t3,$s3
+mul $s3,$s3,0x0010101
 sw $s3,($s2)
 
 
@@ -148,7 +157,6 @@ bne $t0,$s1,converte
 
 
 j abre_menu   # volta para o menu
-
 
 ################################################################################
 thresholding:
@@ -163,14 +171,23 @@ mul $s1,$s2,$s3
 mul $s1,$s1,4
 
 # Valor maximo
+la $a0,R_max
+li $v0,4
+syscall
 li $v0,5
 syscall
 move $s4,$v0
 
+la $a0,G_max
+li $v0,4
+syscall
 li $v0,5
 syscall
 move $s5,$v0
 
+la $a0,B_max
+li $v0,4
+syscall
 li $v0,5
 syscall
 move $s6,$v0
@@ -178,20 +195,29 @@ move $s6,$v0
 
 # coloca em um unico registrador
 mul $s4,$s4,0x00010000
-mul $s5,$s5,0x00000100
+mul $s5,$s5,0x0000100
 add $s4,$s4,$s5
 add $s4,$s4,$s6
 
 
 # Valor minimo
+la $a0,R_min
+li $v0,4
+syscall
 li $v0,5
 syscall
 move $s7,$v0
 
+la $a0,G_min
+li $v0,4
+syscall
 li $v0,5
 syscall
 move $s5,$v0
 
+la $a0,B_min
+li $v0,4
+syscall
 li $v0,5
 syscall
 move $s6,$v0
@@ -224,8 +250,6 @@ addi $t0,$t0,4
 bge $s1,$t0,loop_thresh
 
 j abre_menu   # volta para o menu
-
-
 
 
 
