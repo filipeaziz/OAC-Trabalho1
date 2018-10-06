@@ -170,10 +170,6 @@ la $a0,threshold
 li $v0,4
 syscall
 
-lw $s2,tamx
-lw $s3,tamy
-mul $s1,$s2,$s3
-mul $s1,$s1,4
 
 # Valor maximo
 la $a0,R_max
@@ -188,21 +184,14 @@ li $v0,4
 syscall
 li $v0,5
 syscall
-move $s5,$v0
+move $t4,$v0
 
 la $a0,B_max
 li $v0,4
 syscall
 li $v0,5
 syscall
-move $s6,$v0
-
-
-# coloca em um unico registrador
-mul $s4,$s4,0x00010000
-mul $s5,$s5,0x0000100
-add $s4,$s4,$s5
-add $s4,$s4,$s6
+move $t5,$v0
 
 
 # Valor minimo
@@ -211,29 +200,45 @@ li $v0,4
 syscall
 li $v0,5
 syscall
-move $s7,$v0
+move $s5,$v0
 
 la $a0,G_min
 li $v0,4
 syscall
 li $v0,5
 syscall
-move $s5,$v0
+move $t6,$v0
 
 la $a0,B_min
 li $v0,4
 syscall
 li $v0,5
 syscall
-move $s6,$v0
+move $t7,$v0
+
+
+
+limiar:
+# coloca em um unico registrador
+mul $s4,$s4,0x00010000
+mul $t4,$t4,0x0000100
+add $s4,$s4,$t4
+add $s4,$s4,$t5
 
 # coloca em um unico registrador
-mul $s7,$s7,0x00010000
-mul $s5,$s5,0x00000100
-add $s7,$s7,$s5
-add $s7,$s7,$s6
+mul $s5,$s5,0x00010000
+mul $t6,$t6,0x00000100
+add $s5,$s5,$t5
+add $s5,$s5,$t7
 
 
+
+lw $s2,tamx
+lw $s3,tamy
+mul $s1,$s2,$s3
+mul $s1,$s1,4
+
+li $t3,0x10040000
 lw $t0,img
 add $s1,$s1,$t0
 li $t4,0x00ffffff
@@ -242,16 +247,18 @@ li $t4,0x00ffffff
 loop_thresh:
 lw $t2, ($t0)
 bge $t2,$s4,zero	# conefere se e menor que o maximo
-bge $s7,$t2,zero	#confere se e maior que o minimo
+bge $s5,$t2,zero	#confere se e maior que o minimo
 
-sw $t4,($t0)
+sw $t4,($t3)
 addi $t0,$t0,4
+addi $t3,$t3,4
 bge $s1,$t0,loop_thresh
 
 zero:
-sw $zero,($t0)
+sw $zero,($t3)
 
 addi $t0,$t0,4
+addi $t3,$t3,4
 bge $s1,$t0,loop_thresh
 
 j abre_menu   # volta para o menu
