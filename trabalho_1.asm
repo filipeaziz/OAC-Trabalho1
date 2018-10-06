@@ -7,6 +7,8 @@ offs: .word 0
 byte: .byte 0
 tam_blur: .word 1
 img: .word 0x10040000
+enter: .asciiz "\n"
+fimlinha: .asciiz "\0"
 
 menu: .asciiz "\nMENU\n1) Abrir imagem\n2) Blur effect\n3) Edge Extractor\n4) Thresholding\n5) Sair\nEscolha uma opcao:"
 threshold: .asciiz "\n\nTHRESHOLDING\n"
@@ -17,8 +19,10 @@ R_min: .asciiz "Digite o valor minimo de vermelho: "
 G_min: .asciiz "Digite o valor minimo de verde: "
 B_min: .asciiz "Digite o valor minimo de azul: "
 
+salva: .asciiz "\nDigite o nome do arquivo: "
+nome_salva: .asciiz "l.bmp"
 
-blur: .asciiz "Digite o tamanho do kernel do blur: "
+blur: .asciiz "\nDigite o tamanho do kernel do blur: "
 .align 2
 header: .space 56
 
@@ -115,6 +119,7 @@ beq $t1,1,abrir
 beq $t1,2,blur_effect
 beq $t1,3,edge_extractor
 beq $t1,4,thresholding
+beq $t1,6,salvar
 
 # encerra o programa
 li $v0,10
@@ -251,6 +256,77 @@ bge $s1,$t0,loop_thresh
 
 j abre_menu   # volta para o menu
 
+################################################################################
+salvar:
+
+li $v0,4
+la $a0,salva
+syscall
+
+li $v0,8
+la $a0,nome_salva
+li $a1,80
+syscall
+
+li $t3,0
+procura:
+lbu $s5,nome_salva($t3)
+addi $t3,$t3,1
+beq $s5,13,troca
+j procura
+
+troca:
+li $s5,0
+sb $s5,nome_salva($t3)
+
+
+li $v0,13
+la $a0,nome_salva
+li $a1,1
+li $a2,0
+syscall
+move $s0,$v0
+
+li $v0,15
+move $a0,$s0
+la $a1,header+2
+li $a2,54
+syscall
+
+
+lw $s2,tamx
+lw $s3,tamy
+move $s4,$s3
+li $t2,0
+
+muda_linha:
+addi $s3,$s3,-1
+mul $t0,$s2,$s3
+mul $t0,$t0,4
+li $t1,0
+addi $t2,$t2,1
+
+
+loop_salvar:
+la $a1,0x10040000($t0)
+li $a2,3
+li $v0,15
+syscall
+
+
+addi $t0,$t0,4
+addi $t1,$t1,1
+
+bge $t1,$s2,muda_linha    # verifica se chegou no fim da linha
+bge $s4,$t2,loop_salvar  # verifica se a imagem terminou
+
+
+
+li   $v0, 16       # system call for close file
+move $a0, $s0      # file descriptor to close
+syscall 
+
+j abre_menu   # volta para o menu
 
 
 
