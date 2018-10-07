@@ -4,7 +4,6 @@ pixel: .word 0
 tamx: .word 0
 tamy: .word 0
 offs: .word 0
-byte: .byte 0
 tam_blur: .word 1
 img: .word 0x10040000
 kernel: .word 0
@@ -21,10 +20,13 @@ R_min: .asciiz "Digite o valor minimo de vermelho: "
 G_min: .asciiz "Digite o valor minimo de verde: "
 B_min: .asciiz "Digite o valor minimo de azul: "
 
-salva: .asciiz "\nDigite o nome do arquivo: "
-nome_salva: .asciiz "l.bmp"
+salva: .asciiz "\n\nGostaria de salvar a imagem? \nSim = 1 e Nao = 0: "
+digite_salva: .asciiz "\nDigite o nome do arquivo: "
+nome_salva: .asciiz "nome.bmp"
+.align 2
 
 blur: .asciiz "\nDigite o tamanho do kernel do blur: "
+byte: .byte 0
 .align 2
 header: .space 56
 
@@ -64,6 +66,7 @@ sw $s4,tamimg
 
 # salva onde come�a a segunda imagem
 mul $t5,$s4,4
+addi $t5,$t5,4
 addi $t5,$t5,0x10040000 
 sw $t5,iniimg
 
@@ -134,7 +137,6 @@ beq $t1,1,abrir
 beq $t1,2,blur_effect
 beq $t1,3,edge_extractor
 beq $t1,4,thresholding
-beq $t1,6,salvar
 
 # encerra o programa
 li $v0,10
@@ -162,7 +164,7 @@ mul $s0,$s0,4
 li $s1,1
 li $t0,0
 preenche:
-sw $s1,0x10000000($t0)
+sw $s1,0x10010000($t0)
 addi $t0,$t0,4
 bgt $s0,$t0,preenche
 
@@ -192,23 +194,23 @@ li $s2,2
 li $s3,-1
 li $s4,-2
 li $t0,0
-sw $s2,0x10000000($t0)
+sw $s2,0x10010000($t0)
 li $t0,4
-sw $s1,0x10000000($t0)
+sw $s1,0x10010000($t0)
 li $t0,8
-sw $s4,0x10000000($t0)
+sw $s4,0x10010000($t0)
 li $t0,12
-sw $s1,0x10000000($t0)
+sw $s1,0x10010000($t0)
 li $t0,16
-sw $s0,0x10000000($t0)
+sw $s0,0x10010000($t0)
 li $t0,20
-sw $s3,0x10000000($t0)
+sw $s3,0x10010000($t0)
 li $t0,24
-sw $s2,0x10000000($t0)
+sw $s2,0x10010000($t0)
 li $t0,28
-sw $s3,0x10000000($t0)
+sw $s3,0x10010000($t0)
 li $t0,32
-sw $s4,0x10000000($t0)
+sw $s4,0x10010000($t0)
 
 # faz convolucao
 j convolucao
@@ -279,15 +281,15 @@ move $t7,$v0
 
 limiar:
 # coloca em um unico registrador
-mul $s4,$s4,0x00010000
-mul $t4,$t4,0x0000100
+sll $s4,$s4, 16
+sll $t4,$t4, 8
 add $s4,$s4,$t4
 add $s4,$s4,$t5
 
 # coloca em um unico registrador
-mul $s5,$s5,0x00010000
-mul $t6,$t6,0x00000100
-add $s5,$s5,$t5
+sll $s5,$s5,16
+sll $t6,$t6,8
+add $s5,$s5,$t6
 add $s5,$s5,$t7
 
 
@@ -305,8 +307,8 @@ li $t4,0x00ffffff
 
 loop_thresh:
 lw $t2, ($t0)
-bge $t2,$s4,zero	# conefere se e menor que o maximo
-bge $s5,$t2,zero	#confere se e maior que o minimo
+bgt $t2,$s4,zero	# conefere se e menor que ao maximo
+blt $t2,$s5,zero	# confere se e maior que o minimo
 
 sw $t4,($t3)
 addi $t0,$t0,4
@@ -320,28 +322,38 @@ addi $t0,$t0,4
 addi $t3,$t3,4
 bge $s1,$t0,loop_thresh
 
+li $v0,4
+la $a0,salva
+syscall
+
+li $v0,5
+syscall
+bnez $v0, salvar
+
 j abre_menu   # volta para o menu
 
 ################################################################################
 salvar:
 
 li $v0,4
-la $a0,salva
+la $a0,digite_salva
 syscall
 
 li $v0,8
 la $a0,nome_salva
-li $a1,80
+li $a1,24
 syscall
 
 li $t3,0
 procura:
 lbu $s5,nome_salva($t3)
 addi $t3,$t3,1
-beq $s5,13,troca
+beq $s5,10,troca
 j procura
 
 troca:
+addi $t3,$t3,-1
+
 li $s5,0
 sb $s5,nome_salva($t3)
 
@@ -393,6 +405,7 @@ move $a0, $s0      # file descriptor to close
 syscall 
 
 j abre_menu   # volta para o menu
+
 ################################################################################
 greyscale:
 
@@ -407,17 +420,18 @@ li $t0,0
 # pega os valores das cores em cada pixel, faz a media simples e registra cada nivel de cor com esse valor
 lw $s2,iniimg
 converte:
-#add $s2,$s2,$t0
+add $s2,$s2,$t0
 lbu $t1,1($s2)
 lbu $t2,2($s2)
 lbu $t3,3($s2)
 add $s3,$t1,$t2
 add $s3,$s3,$t3
 div $s3,$s3,3
+move $t3,$s3
 mul $s3,$s3,0x0010101
 sw $s3,($s2)
 
-addi $s2,$s2,4
+
 addi $t0,$t0,4
 
 bne $t0,$s1,converte
@@ -526,8 +540,7 @@ lbu $t8,3($t5)
 
 # soma o valor de cada cor ao somador de cada cor
 soma:
-addi $t9,$s4,0x10000000
-addi $s4,$s4,4
+addi $t9,$s4,0x10010000
 lw $t0,($t9)
 mul $t1,$t0,$t6
 add $s5,$s5,$t1
