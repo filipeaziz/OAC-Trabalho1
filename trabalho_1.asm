@@ -161,10 +161,11 @@ move $s0,$v0
 mul $s0,$s0,$s0
 mul $s0,$s0,4
 
-li $s1,1
+li $s1,0
+addiu $s1,$s1,1
 li $t0,0
 preenche:
-sw $s1,0x10010000($t0)
+sw $s1,0x10000000($t0)
 addi $t0,$t0,4
 bgt $s0,$t0,preenche
 
@@ -189,28 +190,30 @@ sw $s1,kernel
 
 # cria kernel
 li $s0,0
-li $s1,1
-li $s2,2
+li $s1,0
+addiu $s1,$s1,1
+li $s2,0
+addiu $s2,$s2,2
 li $s3,-1
 li $s4,-2
 li $t0,0
-sw $s2,0x10010000($t0)
+sw $s2,0x10000000($t0)
 li $t0,4
-sw $s1,0x10010000($t0)
+sw $s1,0x10000000($t0)
 li $t0,8
-sw $s4,0x10010000($t0)
+sw $s4,0x10000000($t0)
 li $t0,12
-sw $s1,0x10010000($t0)
+sw $s1,0x10000000($t0)
 li $t0,16
-sw $s0,0x10010000($t0)
+sw $s0,0x10000000($t0)
 li $t0,20
-sw $s3,0x10010000($t0)
+sw $s3,0x10000000($t0)
 li $t0,24
-sw $s2,0x10010000($t0)
+sw $s2,0x10000000($t0)
 li $t0,28
-sw $s3,0x10010000($t0)
+sw $s3,0x10000000($t0)
 li $t0,32
-sw $s4,0x10010000($t0)
+sw $s4,0x10000000($t0)
 
 # faz convolucao
 j convolucao
@@ -420,7 +423,6 @@ li $t0,0
 # pega os valores das cores em cada pixel, faz a media simples e registra cada nivel de cor com esse valor
 lw $s2,iniimg
 converte:
-add $s2,$s2,$t0
 lbu $t1,1($s2)
 lbu $t2,2($s2)
 lbu $t3,3($s2)
@@ -431,7 +433,7 @@ move $t3,$s3
 mul $s3,$s3,0x0010101
 sw $s3,($s2)
 
-
+addi $s2,$s2,4
 addi $t0,$t0,4
 
 bne $t0,$s1,converte
@@ -540,7 +542,7 @@ lbu $t8,3($t5)
 
 # soma o valor de cada cor ao somador de cada cor
 soma:
-addi $t9,$s4,0x10010000
+addi $t9,$s4,0x10000000
 lw $t0,($t9)
 mul $t1,$t0,$t6
 add $s5,$s5,$t1
