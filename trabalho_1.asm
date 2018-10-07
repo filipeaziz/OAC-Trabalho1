@@ -22,6 +22,7 @@ G_min: .asciiz "Digite o valor minimo de verde: "
 B_min: .asciiz "Digite o valor minimo de azul: "
 
 salva: .asciiz "\nDigite o nome do arquivo: "
+nome_salva: .asciiz "l.bmp"
 
 blur: .asciiz "\nDigite o tamanho do kernel do blur: "
 .align 2
