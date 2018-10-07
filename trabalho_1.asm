@@ -64,9 +64,8 @@ sw $s3,tamy
 mul $s4,$s2,$s3
 sw $s4,tamimg
 
-# salva onde come�a a segunda imagem
+# salva onde comeca a segunda imagem
 mul $t5,$s4,4
-addi $t5,$t5,4
 addi $t5,$t5,0x10040000 
 sw $t5,iniimg
 
@@ -471,7 +470,6 @@ div $s7,$s7,$t1
 cont:
 mul $s5,$s5,0x00010000
 mul $s6,$s6,0x00000100
-mul $s7,$s7,0x00000001
 
 # soma todas as cores em uma word apenas
 add $t2,$s5,$s6
@@ -485,6 +483,7 @@ addi $t5,$t5,4
 addi $t5,$t5,0x10040000
 mul $t6,$t3,$s0
 add $t6,$t6,$s1
+mul $t6,$t6,4
 add $t6,$t6,$t5
 
 # insere nova word de cores na imagem
@@ -502,8 +501,7 @@ beq $s0,3,termina2   # termina a convolucao e volta para edge extractor
 
 # ajusta numero de linha e coluna no kernel
 modifica:
-li $s1,0
-bne $s0,$s1,convloop
+bnez $s0 convloop
 
 ################################################################################
 coordenadas:
@@ -535,6 +533,7 @@ j soma
 continua:
 mul $t5,$t3,$t1
 add $t5,$t5,$t2
+mul $t5,$t5,4
 addi $t5,$t5,0x10040000
 lbu $t6,1($t5)
 lbu $t7,2($t5)
@@ -552,6 +551,7 @@ mul $t1,$t0,$t8
 add $s7,$s7,$t1
 
 # confere se ja terminou de passar o kernel
+addi $s4,$s4,4
 addi $s3,$s3,1
 lw $t2,kernel
 bgt $t2,$s3,coordenadas  # se esta na ultima coluna, confere a coluna
