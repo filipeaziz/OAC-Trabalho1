@@ -175,6 +175,14 @@ termina:
 # passa imagem para heap visivel
 jal move_imagem
 
+li $v0,4
+la $a0,salva
+syscall
+
+li $v0,5
+syscall
+bnez $v0, salvar
+
 j abre_menu   # volta para o menu
 
 ################################################################################
@@ -223,6 +231,14 @@ termina2:
 
 # passa imagem para heap visivel
 jal move_imagem
+
+li $v0,4
+la $a0,salva
+syscall
+
+li $v0,5
+syscall
+bnez $v0, salvar
 
 j abre_menu   # volta para o menu
 
@@ -477,31 +493,30 @@ add $t2,$t2,$s7
 
 # acha posicao onde deve ser colocado a nova word de cores
 lw $t3,tamx
-lw $t4,tamimg
-mul $t5,$t4,4
-addi $t5,$t5,4
-addi $t5,$t5,0x10040000
+lw $t5,iniimg
 mul $t6,$t3,$s0
 add $t6,$t6,$s1
 mul $t6,$t6,4
 add $t6,$t6,$t5
 
 # insere nova word de cores na imagem
+#li $t2,0x00325700
 sw $t2,($t6)
 
 # confere se ja terminou a convolucao
 addi $s1,$s1,1
-bgt $t3,$s3,convloop  # se esta na ultima coluna, confere a coluna
+bgt $t3,$s1,convloop  # se esta na ultima coluna, confere a linha
 lw $t7,tamy
 addi $s0,$s0,1
-blt $s2,$t7,modifica  # se esta na ultima linha, acaba, caso nao, ajusta coordenadas  para continuar
+blt $s0,$t7,modifica  # se esta na ultima linha, acaba, caso nao, ajusta coordenadas  para continuar
 lw $s0,func
 beq $s0,2,termina   # termina a convolucao e volta para blur
 beq $s0,3,termina2   # termina a convolucao e volta para edge extractor
 
 # ajusta numero de linha e coluna no kernel
 modifica:
-bnez $s0 convloop
+li $s1,0
+j convloop
 
 ################################################################################
 coordenadas:
@@ -562,7 +577,7 @@ j poscoordenadas
 # ajusta numero de linha e coluna no kernel
 ajusta:
 li $s3,0
-bne $s3,$s2,coordenadas
+j coordenadas
 
 
 ################################################################################
